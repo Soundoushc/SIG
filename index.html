@@ -212,14 +212,26 @@
         }).addTo(map);
 
 <script>
+    let selectedFeature = null; // Variable pour stocker le dernier élément cliqué
+
+    // Changer le curseur quand on survole la couche Pavement
+    map.on('mousemove', function (evt) {
+        if (PAVEMENTLayer) {
+            map.getContainer().style.cursor = 'pointer'; // Change le curseur
+        } else {
+            map.getContainer().style.cursor = ''; // Remet le curseur normal si la couche n'est pas active
+        }
+    });
+
+    // Fonction pour récupérer les infos d'un Pavement avec GetFeatureInfo
     function getFeatureInfo(evt) {
         let url = 'http://localhost:8080/geoserver/website/ows?service=WMS&version=1.1.1&request=GetFeatureInfo' +
-            '&layers=PAVEMENT' +  // Nom exact de ta couche GeoServer
-            '&query_layers=PAVEMENT' + 
+            '&layers=PAVEMENT' +
+            '&query_layers=PAVEMENT' +
             '&info_format=application/json' +
-            '&feature_count=5' +
+            '&feature_count=1' +
             '&x=' + evt.containerPoint.x + '&y=' + evt.containerPoint.y +
-            '&srs=EPSG:4326' + 
+            '&srs=EPSG:4326' +
             '&width=' + map.getSize().x + '&height=' + map.getSize().y +
             '&bbox=' + map.getBounds().toBBoxString();
 
@@ -236,6 +248,8 @@
                         <b>Type de Pavement:</b> ${props.PAVE_TYPE}<br>
                         <b>Largeur:</b> ${props.PAVE_WIDTH} m
                     `;
+
+                    // Ouvre une popup avec les infos
                     L.popup()
                         .setLatLng(evt.latlng)
                         .setContent(info)
@@ -247,13 +261,15 @@
             .catch(error => console.log("Erreur:", error));
     }
 
-    // Ajouter l'événement de clic sur la carte
+    // Détecter un clic sur la carte et récupérer les infos
     map.on('click', function (evt) {
-        if (PAVEMENTLayer) {  // Vérifier si la couche est affichée
+        if (PAVEMENTLayer) {
             getFeatureInfo(evt);
         }
     });
+
 </script>
+
 
         
         // Contrôle de la barre latérale
