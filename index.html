@@ -210,77 +210,7 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19
         }).addTo(map);
- 
-<script>
-    let selectedFeature = null;
 
-    // Modifier le curseur au survol de la couche Pavement
-    map.on('mousemove', function (evt) {
-        if (PAVEMENTLayer) {
-            map.getContainer().style.cursor = 'pointer';
-        } else {
-            map.getContainer().style.cursor = '';
-        }
-    });
-
-    // Fonction pour récupérer les infos d'un Pavement
-    function getFeatureInfo(evt) {
-        if (!PAVEMENTLayer) return;
-
-        let bbox = map.getBounds().toBBoxString(); // BBOX
-        let size = map.getSize(); // Taille de la carte
-
-        // Conversion des coordonnées Leaflet (EPSG:3857) vers EPSG:2264
-        let point = proj4('EPSG:3857', 'EPSG:2264', [evt.latlng.lng, evt.latlng.lat]);
-
-        let url = `http://localhost:8080/geoserver/website/ows?
-            service=WMS&
-            version=1.1.1&
-            request=GetFeatureInfo&
-            layers=PAVEMENT&
-            query_layers=PAVEMENT&
-            styles=&
-            bbox=${bbox}&
-            width=${size.x}&
-            height=${size.y}&
-            srs=EPSG:2264&
-            format=image/png&
-            info_format=application/json&
-            x=${point[0]}&
-            y=${point[1]}&
-            feature_count=1`
-            .replace(/\s+/g, ""); // Suppression des espaces
-
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                if (data.features && data.features.length > 0) {
-                    let props = data.features[0].properties;
-                    let info = `
-                        <b>Route:</b> ${props.ROUTE1}<br>
-                        <b>Début:</b> ${props.BEGING_MP}<br>
-                        <b>Fin:</b> ${props.END_MP}<br>
-                        <b>État:</b> ${props.RATING}<br>
-                        <b>Type:</b> ${props.PAVE_TYPE}<br>
-                        <b>Largeur:</b> ${props.PAVE_WIDTH} m
-                    `;
-
-                    L.popup()
-                        .setLatLng(evt.latlng)
-                        .setContent(info)
-                        .openOn(map);
-                } else {
-                    console.warn("Aucune information trouvée.");
-                }
-            })
-            .catch(error => console.error("Erreur GetFeatureInfo:", error));
-    }
-
-    // Détecter un clic sur la carte
-    map.on('click', function (evt) {
-        getFeatureInfo(evt);
-    });
-</script>
 
 
 <script>
